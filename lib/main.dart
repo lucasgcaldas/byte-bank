@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 void main() => runApp(BytebankApp());
@@ -7,7 +8,7 @@ class BytebankApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: FormularioTransferencia(),
+        body: ListaTransferencia(),
       ),
     );
   }
@@ -26,41 +27,56 @@ class FormularioTransferencia extends StatelessWidget {
         ),
         body: Column(
           children: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _controladorCampoNumeroConta,
-                style: TextStyle(fontSize: 24.0),
-                decoration: InputDecoration(
-                    labelText: 'Número da conta', hintText: '000'),
-                keyboardType: TextInputType.number,
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _controladorCampoValor,
-                style: TextStyle(fontSize: 24.0),
-                decoration: InputDecoration(
-                    icon: Icon(Icons.monetization_on),
-                    labelText: 'Valor',
-                    hintText: '0000.0'),
-                keyboardType: TextInputType.number,
-              ),
-            ),
+            Editor(
+                controlador: _controladorCampoNumeroConta,
+                rotulo: 'Número da conta',
+                dica: '000'),
+            Editor(
+                controlador: _controladorCampoValor,
+                rotulo: 'Valor',
+                dica: '0.00',
+                icone: Icons.monetization_on),
             ElevatedButton(
-              onPressed: () {
-                final int numeroConta =
-                    int.parse(_controladorCampoNumeroConta.text);
-                final double valor = double.parse(_controladorCampoValor.text);
-
-                final transferenciaCriada = Transferencia(valor, numeroConta);
-                debugPrint('$transferenciaCriada');
-              },
+              onPressed: () => _criaTransferencia(context),
               child: const Text('confirmar'),
             )
           ],
         ));
+  }
+
+  void _criaTransferencia(BuildContext context) {
+    final int numeroConta = int.parse(_controladorCampoNumeroConta.text);
+    final double valor = double.parse(_controladorCampoValor.text);
+
+    final transferenciaCriada = Transferencia(valor, numeroConta);
+    debugPrint('$transferenciaCriada');
+    Navigator.pop(context, transferenciaCriada);
+  }
+}
+
+class Editor extends StatelessWidget {
+  final TextEditingController? controlador;
+  final String? rotulo;
+  final String? dica;
+  final IconData? icone;
+
+  Editor({this.controlador, this.rotulo, this.dica, this.icone});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(16.0),
+      child: TextField(
+        controller: controlador,
+        style: TextStyle(fontSize: 24.0),
+        decoration: InputDecoration(
+          icon: icone != null ? Icon(icone) : null,
+          labelText: rotulo,
+          hintText: dica,
+        ),
+        keyboardType: TextInputType.number,
+      ),
+    );
   }
 }
 
@@ -79,7 +95,15 @@ class ListaTransferencia extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          final Future future =
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return FormularioTransferencia();
+          }));
+          future.then((transferenciaRecebida) {
+            debugPrint('$transferenciaRecebida');
+          });
+        },
         child: const Icon(Icons.add),
       ),
     );
